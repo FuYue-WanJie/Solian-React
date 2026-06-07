@@ -416,10 +416,10 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ClockCard />
         <CheckInCard onCheckedIn={handleCheckedIn} />
-        <FeaturedPostsCard />
         {checkInResult?.fortuneReport && (
           <FortuneCard result={checkInResult} />
         )}
+        <FeaturedPostsCard />
       </div>
     </div>
   )
