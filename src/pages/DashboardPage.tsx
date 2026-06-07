@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Typography, Spin, Tag } from 'antd'
+import { Card, Typography, Spin, Tag, Button } from 'antd'
 import { App } from 'antd'
 import {
   RiseOutlined,
@@ -17,6 +17,9 @@ import {
   BulbOutlined,
   SafetyCertificateOutlined,
   FireFilled,
+  LeftOutlined,
+  RightOutlined,
+  StarOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import {
@@ -25,6 +28,8 @@ import {
   CHECKIN_LEVELS,
 } from '../services/checkInService'
 import type { CheckInResult } from '../services/checkInService'
+import { getFeaturedPosts } from '../services/postService'
+import type { FeaturedPost } from '../services/postService'
 
 const { Text } = Typography
 
@@ -285,6 +290,101 @@ function FortuneCard({ result }: { result: CheckInResult }) {
   )
 }
 
+// ============ 精选帖子卡片 ============
+function FeaturedPostsCard() {
+  const [loading, setLoading] = useState(true)
+  const [posts, setPosts] = useState<FeaturedPost[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  const fetchPosts = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await getFeaturedPosts()
+      setPosts(data)
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [fetchPosts])
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length)
+  }, [posts.length])
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % posts.length)
+  }, [posts.length])
+
+  if (loading) {
+    return (
+      <Card style={cardStyle}>
+        <div style={{ textAlign: 'center', padding: '12px 0' }}><Spin /></div>
+      </Card>
+    )
+  }
+
+  if (posts.length === 0) {
+    return null
+  }
+
+  const currentPost = posts[currentIndex]
+
+  return (
+    <Card
+      style={cardStyle}
+      styles={{ body: { padding: '14px 18px' } }}
+    >
+      {/* 标题行 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <StarOutlined style={{ fontSize: 20, color: '#faad14', flexShrink: 0 }} />
+        <Text strong style={{ fontSize: 17, color: '#1a1a1a', flexShrink: 0 }}>精选帖子</Text>
+        <Text type="secondary" style={{ fontSize: 12, marginLeft: 'auto' }}>
+          {currentIndex + 1} / {posts.length}
+        </Text>
+      </div>
+
+      {/* 帖子内容区域 */}
+      <div style={{
+        maxHeight: '300px',
+        overflowY: 'auto',
+        marginBottom: 12,
+      }}>
+        {/* 帖子标题 */}
+        {currentPost.title && (
+          <Text strong style={{ fontSize: 15, display: 'block', marginBottom: 8 }}>
+            {currentPost.title}
+          </Text>
+        )}
+        {/* 帖子内容 */}
+        <Text style={{ fontSize: 14, lineHeight: 1.6, color: '#333', wordBreak: 'break-word' }}>
+          {currentPost.content}
+        </Text>
+        {/* 发布者信息 */}
+        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f0f0f0' }}>
+          <Text style={{ fontSize: 13, color: '#666' }}>
+            发布者：{currentPost.publisher.nick}
+          </Text>
+        </div>
+      </div>
+
+      {/* 导航按钮 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        <Button icon={<LeftOutlined />} onClick={handlePrev} disabled={posts.length <= 1} style={{ flex: 1 }}>
+          上一条
+        </Button>
+        <Button icon={<RightOutlined />} onClick={handleNext} disabled={posts.length <= 1} style={{ flex: 1 }}>
+          下一条
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
 // ============ 公共样式 ============
 const cardStyle: React.CSSProperties = {
   borderRadius: 14,
@@ -316,6 +416,7 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ClockCard />
         <CheckInCard onCheckedIn={handleCheckedIn} />
+        <FeaturedPostsCard />
         {checkInResult?.fortuneReport && (
           <FortuneCard result={checkInResult} />
         )}
