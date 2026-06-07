@@ -68,7 +68,12 @@ export interface FeaturedPost {
     name: string
     nick: string
     bio: string
-    picture: unknown
+    picture: {
+      url: string | null
+      width: number | null
+      height: number | null
+      blurhash: string | null
+    }
     background: unknown
     verification: unknown | null
     accountId: string

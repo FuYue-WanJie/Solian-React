@@ -20,6 +20,7 @@ import {
   LeftOutlined,
   RightOutlined,
   StarOutlined,
+  UserOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import {
@@ -356,26 +357,85 @@ function FeaturedPostsCard() {
 
       {/* 帖子内容区域 */}
       <div style={{
-        maxHeight: '300px',
+        maxHeight: '400px',
         overflowY: 'auto',
         marginBottom: 12,
       }}>
+        {/* 发布者信息（头像+昵称） */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f0f0f0' }}>
+          {currentPost.publisher.picture?.url ? (
+            <img
+              src={currentPost.publisher.picture.url}
+              alt={currentPost.publisher.nick}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                flexShrink: 0,
+              }}
+            />
+          ) : (
+            <div style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              backgroundColor: '#e6e6e6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 18,
+              color: '#999',
+              flexShrink: 0,
+            }}>
+              <UserOutlined />
+            </div>
+          )}
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <Text strong style={{ fontSize: 14, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentPost.publisher.nick}
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              @{currentPost.publisher.name}
+            </Text>
+          </div>
+        </div>
+
         {/* 帖子标题 */}
         {currentPost.title && (
           <Text strong style={{ fontSize: 15, display: 'block', marginBottom: 8 }}>
             {currentPost.title}
           </Text>
         )}
+
         {/* 帖子内容 */}
         <Text style={{ fontSize: 14, lineHeight: 1.6, color: '#333', wordBreak: 'break-word' }}>
           {currentPost.content}
         </Text>
-        {/* 发布者信息 */}
-        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f0f0f0' }}>
-          <Text style={{ fontSize: 13, color: '#666' }}>
-            发布者：{currentPost.publisher.nick}
-          </Text>
-        </div>
+
+        {/* 附件（图片） */}
+        {currentPost.attachments && currentPost.attachments.length > 0 && (
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {currentPost.attachments.map((attachment) => {
+              if (attachment.mimeType?.startsWith('image/')) {
+                const imageUrl = attachment.fileMeta ? `https://api.solian.app/drive/files/${attachment.id}` : null
+                return imageUrl ? (
+                  <img
+                    key={attachment.id}
+                    src={imageUrl}
+                    alt={attachment.name}
+                    style={{
+                      maxWidth: '100%',
+                      borderRadius: 8,
+                      objectFit: 'cover',
+                    }}
+                  />
+                ) : null
+              }
+              return null
+            })}
+          </div>
+        )}
       </div>
 
       {/* 导航按钮 */}

@@ -105,9 +105,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
 
   restore() {
-    // 临时禁用自动恢复登录，方便测试登录页面
-    saveToken(null)
-    set({ tokenPair: null, isAuthenticated: false })
+    const pair = loadToken()
+    if (pair && pair.expiresAt > Date.now()) {
+      set({ tokenPair: pair, isAuthenticated: true })
+    } else {
+      saveToken(null)
+      set({ tokenPair: null, isAuthenticated: false })
+    }
   },
 
   setToken(resp: TokenResponse) {
