@@ -69,7 +69,6 @@ export interface FeaturedPost {
     nick: string
     bio: string
     picture: {
-      id?: string
       url: string | null
       width: number | null
       height: number | null
