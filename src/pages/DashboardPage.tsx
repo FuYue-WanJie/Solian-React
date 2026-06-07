@@ -21,6 +21,7 @@ import {
   RightOutlined,
   StarOutlined,
   UserOutlined,
+  CloseOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import {
@@ -297,11 +298,126 @@ function FortuneCard({ result }: { result: CheckInResult }) {
   )
 }
 
+// ============ 图片查看器组件 ============
+function ImageViewer({
+  images,
+  currentIndex,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  images: Array<{ id: string; name: string }>
+  currentIndex: number
+  onClose: () => void
+  onPrev: () => void
+  onNext: () => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+      }}
+      onClick={onClose}
+    >
+      {/* 关闭按钮 */}
+      <Button
+        type="text"
+        icon={<CloseOutlined />}
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          color: 'white',
+          fontSize: 24,
+        }}
+      />
+
+      {/* 上一张 */}
+      {images.length > 1 && (
+        <Button
+          type="text"
+          icon={<LeftOutlined />}
+          onClick={(e) => {
+            e.stopPropagation()
+            onPrev()
+          }}
+          style={{
+            position: 'absolute',
+            left: 16,
+            color: 'white',
+            fontSize: 32,
+            height: 64,
+            width: 64,
+          }}
+        />
+      )}
+
+      {/* 图片 */}
+      <img
+        src={`https://api.solian.app/drive/files/${images[currentIndex].id}`}
+        alt={images[currentIndex].name}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '90%',
+          maxHeight: '90%',
+          objectFit: 'contain',
+        }}
+      />
+
+      {/* 下一张 */}
+      {images.length > 1 && (
+        <Button
+          type="text"
+          icon={<RightOutlined />}
+          onClick={(e) => {
+            e.stopPropagation()
+            onNext()
+          }}
+          style={{
+            position: 'absolute',
+            right: 16,
+            color: 'white',
+            fontSize: 32,
+            height: 64,
+            width: 64,
+          }}
+        />
+      )}
+
+      {/* 图片指示器 */}
+      {images.length > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 24,
+            color: 'white',
+            fontSize: 14,
+          }}
+        >
+          {currentIndex + 1} / {images.length}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ============ 精选帖子卡片 ============
 function FeaturedPostsCard() {
   const [loading, setLoading] = useState(true)
   const [posts, setPosts] = useState<FeaturedPost[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showImageViewer, setShowImageViewer] = useState(false)
 
   const fetchPosts = useCallback(async () => {
     setLoading(true)
@@ -321,10 +437,12 @@ function FeaturedPostsCard() {
 
   const handlePrev = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length)
+    setCurrentImageIndex(0) // 重置图片索引
   }, [posts.length])
 
   const handleNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % posts.length)
+    setCurrentImageIndex(0) // 重置图片索引
   }, [posts.length])
 
   if (loading) {
@@ -419,32 +537,107 @@ function FeaturedPostsCard() {
           {currentPost.content}
         </Text>
 
-        {/* 附件（图片） */}
-        {currentPost.attachments && currentPost.attachments.length > 0 && (
-          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {currentPost.attachments.map((attachment) => {
-              if (attachment.mimeType?.startsWith('image/')) {
-                const imageUrl = attachment.fileMeta ? `https://api.solian.app/drive/files/${attachment.id}` : null
-                return imageUrl ? (
-                  <img
-                    key={attachment.id}
-                    src={imageUrl}
-                    alt={attachment.name}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none'
-                    }}
-                    style={{
-                      maxWidth: '100%',
-                      borderRadius: 8,
-                      objectFit: 'cover',
-                    }}
-                  />
-                ) : null
-              }
-              return null
-            })}
-          </div>
-        )}
+        {/* 附件（图片画廊） */}
+        {(() => {
+          const images = currentPost.attachments?.filter(
+            (att) => att.mimeType?.startsWith('image/')
+          ) || []
+          if (images.length === 0) return null
+
+          const currentImage = images[currentImageIndex]
+
+          return (
+            <div style={{ marginTop: 12 }}>
+              {/* 当前图片 */}
+              <div style={{ position: 'relative' }}>
+                <img
+                  key={currentImage.id}
+                  src={`https://api.solian.app/drive/files/${currentImage.id}`}
+                  alt={currentImage.name}
+                  onClick={() => setShowImageViewer(true)}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                  style={{
+                    width: '100%',
+                    borderRadius: 8,
+                    objectFit: 'cover',
+                    cursor: 'pointer',
+                  }}
+                />
+
+                {/* 左右切换箭头 */}
+                {images.length > 1 && (
+                  <>
+                    <Button
+                      type="text"
+                      icon={<LeftOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+                      }}
+                      style={{
+                        position: 'absolute',
+                        left: 8,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: 32,
+                        height: 32,
+                      }}
+                    />
+                    <Button
+                      type="text"
+                      icon={<RightOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setCurrentImageIndex((prev) => (prev + 1) % images.length)
+                      }}
+                      style={{
+                        position: 'absolute',
+                        right: 8,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: 32,
+                        height: 32,
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* 图片指示器 */}
+              {images.length > 1 && (
+                <div style={{
+                  marginTop: 8,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}>
+                  {images.map((_, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: idx === currentImageIndex ? '#1677ff' : '#d9d9d9',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s',
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* 导航按钮 */}
@@ -456,6 +649,22 @@ function FeaturedPostsCard() {
           下一条
         </Button>
       </div>
+
+      {/* 图片查看器 */}
+      {showImageViewer && (() => {
+        const images = currentPost.attachments?.filter(
+          (att) => att.mimeType?.startsWith('image/')
+        ) || []
+        return (
+          <ImageViewer
+            images={images}
+            currentIndex={currentImageIndex}
+            onClose={() => setShowImageViewer(false)}
+            onPrev={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
+            onNext={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
+          />
+        )
+      })()}
     </Card>
   )
 }
