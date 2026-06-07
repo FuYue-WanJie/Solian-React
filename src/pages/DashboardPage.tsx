@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Typography, Spin, Tag } from 'antd'
+import { Card, Typography, Spin, Tag, Button } from 'antd'
 import { App } from 'antd'
 import {
   RiseOutlined,
@@ -17,6 +17,11 @@ import {
   BulbOutlined,
   SafetyCertificateOutlined,
   FireFilled,
+  LeftOutlined,
+  RightOutlined,
+  StarOutlined,
+  UserOutlined,
+  CloseOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import {
@@ -25,6 +30,8 @@ import {
   CHECKIN_LEVELS,
 } from '../services/checkInService'
 import type { CheckInResult } from '../services/checkInService'
+import { getFeaturedPosts } from '../services/postService'
+import type { FeaturedPost } from '../services/postService'
 
 const { Text } = Typography
 
@@ -233,22 +240,28 @@ function FortuneCard({ result }: { result: CheckInResult }) {
       </div>
 
       {/* 宜忌 */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', background: '#f6ffed', borderRadius: 8, borderLeft: '3px solid #52c41a', overflow: 'hidden' }}>
-          <Text style={{ fontSize: 13, fontWeight: 500, color: '#389e0d', display: 'block' }}>
-            <CheckCircleOutlined style={{ marginRight: 4 }} />宜
-          </Text>
-          <Text style={{ fontSize: 13, color: '#555', display: 'block', marginTop: 4, wordBreak: 'break-word' }}>
-            {report.luckyAction}
-          </Text>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', overflow: 'hidden' }}>
+          <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 16, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <Text style={{ fontSize: 14, fontWeight: 500, color: '#389e0d', display: 'block', wordBreak: 'break-word' }}>
+              宜
+            </Text>
+            <Text style={{ fontSize: 13, color: '#666', display: 'block', marginTop: 2, wordBreak: 'break-word' }}>
+              {report.luckyAction}
+            </Text>
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', background: '#fff2f0', borderRadius: 8, borderLeft: '3px solid #ff4d4f', overflow: 'hidden' }}>
-          <Text style={{ fontSize: 13, fontWeight: 500, color: '#cf1322', display: 'block' }}>
-            <WarningOutlined style={{ marginRight: 4 }} />忌
-          </Text>
-          <Text style={{ fontSize: 13, color: '#555', display: 'block', marginTop: 4, wordBreak: 'break-word' }}>
-            {report.avoidAction}
-          </Text>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', overflow: 'hidden' }}>
+          <WarningOutlined style={{ color: '#ff4d4f', fontSize: 16, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <Text style={{ fontSize: 14, fontWeight: 500, color: '#cf1322', display: 'block', wordBreak: 'break-word' }}>
+              忌
+            </Text>
+            <Text style={{ fontSize: 13, color: '#666', display: 'block', marginTop: 2, wordBreak: 'break-word' }}>
+              {report.avoidAction}
+            </Text>
+          </div>
         </div>
       </div>
 
@@ -281,6 +294,391 @@ function FortuneCard({ result }: { result: CheckInResult }) {
           </div>
         )}
       </div>
+    </Card>
+  )
+}
+
+// ============ 图片查看器组件 ============
+function ImageViewer({
+  images,
+  currentIndex,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  images: Array<{ id: string; name: string }>
+  currentIndex: number
+  onClose: () => void
+  onPrev: () => void
+  onNext: () => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+      }}
+      onClick={onClose}
+    >
+      {/* 关闭按钮 */}
+      <Button
+        type="text"
+        icon={<CloseOutlined />}
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          color: 'white',
+          fontSize: 24,
+        }}
+      />
+
+      {/* 上一张 */}
+      {images.length > 1 && currentIndex > 0 && (
+        <Button
+          type="text"
+          icon={<LeftOutlined />}
+          onClick={(e) => {
+            e.stopPropagation()
+            onPrev()
+          }}
+          style={{
+            position: 'absolute',
+            left: 16,
+            color: 'white',
+            fontSize: 32,
+            height: 64,
+            width: 64,
+          }}
+        />
+      )}
+
+      {/* 图片 */}
+      <img
+        src={`https://api.solian.app/drive/files/${images[currentIndex].id}`}
+        alt={images[currentIndex].name}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '90%',
+          maxHeight: '90%',
+          objectFit: 'contain',
+        }}
+      />
+
+      {/* 下一张 */}
+      {images.length > 1 && currentIndex < images.length - 1 && (
+        <Button
+          type="text"
+          icon={<RightOutlined />}
+          onClick={(e) => {
+            e.stopPropagation()
+            onNext()
+          }}
+          style={{
+            position: 'absolute',
+            right: 16,
+            color: 'white',
+            fontSize: 32,
+            height: 64,
+            width: 64,
+          }}
+        />
+      )}
+
+      {/* 图片指示器 */}
+      {images.length > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 24,
+            color: 'white',
+            fontSize: 14,
+          }}
+        >
+          {currentIndex + 1} / {images.length}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============ 精选帖子卡片 ============
+function FeaturedPostsCard() {
+  const [loading, setLoading] = useState(true)
+  const [posts, setPosts] = useState<FeaturedPost[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showImageViewer, setShowImageViewer] = useState(false)
+
+  const fetchPosts = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await getFeaturedPosts()
+      setPosts(data)
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [fetchPosts])
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length)
+    setCurrentImageIndex(0) // 重置图片索引
+  }, [posts.length])
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % posts.length)
+    setCurrentImageIndex(0) // 重置图片索引
+  }, [posts.length])
+
+  if (loading) {
+    return (
+      <Card style={cardStyle}>
+        <div style={{ textAlign: 'center', padding: '12px 0' }}><Spin /></div>
+      </Card>
+    )
+  }
+
+  if (posts.length === 0) {
+    return null
+  }
+
+  const currentPost = posts[currentIndex]
+
+  return (
+    <Card
+      style={cardStyle}
+      styles={{ body: { padding: '14px 18px' } }}
+    >
+      {/* 标题行 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <StarOutlined style={{ fontSize: 20, color: '#faad14', flexShrink: 0 }} />
+        <Text strong style={{ fontSize: 17, color: '#1a1a1a', flexShrink: 0 }}>精选帖子</Text>
+        <Text type="secondary" style={{ fontSize: 12, marginLeft: 'auto' }}>
+          {currentIndex + 1} / {posts.length}
+        </Text>
+      </div>
+
+      {/* 帖子内容区域 */}
+      <div style={{
+        maxHeight: '400px',
+        overflowY: 'auto',
+        marginBottom: 12,
+      }}>
+        {/* 发布者信息（头像+昵称） */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f0f0f0' }}>
+          {currentPost.publisher.picture?.id ? (
+            <img
+              key={currentPost.publisher.picture.id}
+              src={`https://api.solian.app/drive/files/${currentPost.publisher.picture.id}`}
+              alt={currentPost.publisher.nick}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+                target.nextElementSibling?.removeAttribute('style')
+              }}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                flexShrink: 0,
+              }}
+            />
+          ) : null}
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            backgroundColor: '#e6e6e6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+            color: '#999',
+            flexShrink: 0,
+            ...(currentPost.publisher.picture?.id ? { display: 'none' } : {}),
+          }}>
+            <UserOutlined />
+          </div>
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <Text strong style={{ fontSize: 14, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentPost.publisher.nick}
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              @{currentPost.publisher.name}
+            </Text>
+          </div>
+        </div>
+
+        {/* 帖子标题 */}
+        {currentPost.title && (
+          <Text strong style={{ fontSize: 15, display: 'block', marginBottom: 8 }}>
+            {currentPost.title}
+          </Text>
+        )}
+
+        {/* 帖子内容 */}
+        <Text style={{ fontSize: 14, lineHeight: 1.6, color: '#333', wordBreak: 'break-word' }}>
+          {currentPost.content}
+        </Text>
+
+        {/* 附件（图片画廊） */}
+        {(() => {
+          const images = currentPost.attachments?.filter(
+            (att) => att.mimeType?.startsWith('image/')
+          ) || []
+          if (images.length === 0) return null
+
+          const currentImage = images[currentImageIndex]
+
+          return (
+            <div style={{ marginTop: 12 }}>
+              {/* 当前图片 */}
+              <div style={{ position: 'relative' }}>
+                <img
+                  key={currentImage.id}
+                  src={`https://api.solian.app/drive/files/${currentImage.id}`}
+                  alt={currentImage.name}
+                  onClick={() => setShowImageViewer(true)}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                  style={{
+                    width: '100%',
+                    borderRadius: 8,
+                    objectFit: 'cover',
+                    cursor: 'pointer',
+                  }}
+                />
+
+                {/* 左右切换箭头 */}
+                {images.length > 1 && (
+                  <>
+                    {currentImageIndex > 0 && (
+                      <Button
+                        type="text"
+                        icon={<LeftOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCurrentImageIndex((prev) => prev - 1)
+                        }}
+                        style={{
+                          position: 'absolute',
+                          left: 8,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: 32,
+                          height: 32,
+                        }}
+                      />
+                    )}
+                    {currentImageIndex < images.length - 1 && (
+                      <Button
+                        type="text"
+                        icon={<RightOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCurrentImageIndex((prev) => prev + 1)
+                        }}
+                        style={{
+                          position: 'absolute',
+                          right: 8,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: 32,
+                          height: 32,
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* 图片指示器 */}
+              {images.length > 1 && (
+                <div style={{
+                  marginTop: 8,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}>
+                  {images.map((_, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: idx === currentImageIndex ? '#1677ff' : '#d9d9d9',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s',
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+      </div>
+
+      {/* 导航按钮 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        <Button
+          icon={<LeftOutlined />}
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
+          style={{ flex: 1 }}
+        >
+          上一条
+        </Button>
+        <Button
+          icon={<RightOutlined />}
+          onClick={handleNext}
+          disabled={currentIndex === posts.length - 1}
+          style={{ flex: 1 }}
+        >
+          下一条
+        </Button>
+      </div>
+
+      {/* 图片查看器 */}
+      {showImageViewer && (() => {
+        const images = currentPost.attachments?.filter(
+          (att) => att.mimeType?.startsWith('image/')
+        ) || []
+        return (
+          <ImageViewer
+            images={images}
+            currentIndex={currentImageIndex}
+            onClose={() => setShowImageViewer(false)}
+            onPrev={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
+            onNext={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
+          />
+        )
+      })()}
     </Card>
   )
 }
@@ -319,6 +717,7 @@ export default function DashboardPage() {
         {checkInResult?.fortuneReport && (
           <FortuneCard result={checkInResult} />
         )}
+        <FeaturedPostsCard />
       </div>
     </div>
   )

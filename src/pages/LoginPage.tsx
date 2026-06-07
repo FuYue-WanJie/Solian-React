@@ -259,6 +259,16 @@ export default function LoginPage() {
               下一步
             </Button>
 
+            <Button
+              type="link"
+              size="large"
+              block
+              onClick={() => navigate('/', { replace: true })}
+              style={{ marginTop: 8, color: '#999' }}
+            >
+              暂不登录，以游客身份浏览
+            </Button>
+
             <Divider plain>
               <Text type="secondary" style={{ fontSize: 13 }}>
                 或使用第三方登录

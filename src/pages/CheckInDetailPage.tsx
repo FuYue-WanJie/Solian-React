@@ -23,7 +23,7 @@ import {
 import { getCheckInToday, CHECKIN_LEVELS } from '../services/checkInService'
 import type { CheckInResult } from '../services/checkInService'
 
-const { Text, Paragraph } = Typography
+const { Text } = Typography
 
 const cardStyle: React.CSSProperties = {
   borderRadius: 14,
