@@ -365,8 +365,14 @@ function FeaturedPostsCard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f0f0f0' }}>
           {currentPost.publisher.picture?.id ? (
             <img
+              key={currentPost.publisher.picture.id}
               src={`https://api.solian.app/drive/files/${currentPost.publisher.picture.id}`}
               alt={currentPost.publisher.nick}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+                target.nextElementSibling?.removeAttribute('style')
+              }}
               style={{
                 width: 40,
                 height: 40,
@@ -375,22 +381,22 @@ function FeaturedPostsCard() {
                 flexShrink: 0,
               }}
             />
-          ) : (
-            <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              backgroundColor: '#e6e6e6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 18,
-              color: '#999',
-              flexShrink: 0,
-            }}>
-              <UserOutlined />
-            </div>
-          )}
+          ) : null}
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            backgroundColor: '#e6e6e6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+            color: '#999',
+            flexShrink: 0,
+            ...(currentPost.publisher.picture?.id ? { display: 'none' } : {}),
+          }}>
+            <UserOutlined />
+          </div>
           <div style={{ minWidth: 0, overflow: 'hidden' }}>
             <Text strong style={{ fontSize: 14, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {currentPost.publisher.nick}
@@ -424,6 +430,9 @@ function FeaturedPostsCard() {
                     key={attachment.id}
                     src={imageUrl}
                     alt={attachment.name}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none'
+                    }}
                     style={{
                       maxWidth: '100%',
                       borderRadius: 8,
