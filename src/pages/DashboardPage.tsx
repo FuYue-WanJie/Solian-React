@@ -343,7 +343,7 @@ function ImageViewer({
       />
 
       {/* 上一张 */}
-      {images.length > 1 && (
+      {images.length > 1 && currentIndex > 0 && (
         <Button
           type="text"
           icon={<LeftOutlined />}
@@ -375,7 +375,7 @@ function ImageViewer({
       />
 
       {/* 下一张 */}
-      {images.length > 1 && (
+      {images.length > 1 && currentIndex < images.length - 1 && (
         <Button
           type="text"
           icon={<RightOutlined />}
@@ -569,44 +569,48 @@ function FeaturedPostsCard() {
                 {/* 左右切换箭头 */}
                 {images.length > 1 && (
                   <>
-                    <Button
-                      type="text"
-                      icon={<LeftOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
-                      }}
-                      style={{
-                        position: 'absolute',
-                        left: 8,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: 32,
-                        height: 32,
-                      }}
-                    />
-                    <Button
-                      type="text"
-                      icon={<RightOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setCurrentImageIndex((prev) => (prev + 1) % images.length)
-                      }}
-                      style={{
-                        position: 'absolute',
-                        right: 8,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: 32,
-                        height: 32,
-                      }}
-                    />
+                    {currentImageIndex > 0 && (
+                      <Button
+                        type="text"
+                        icon={<LeftOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCurrentImageIndex((prev) => prev - 1)
+                        }}
+                        style={{
+                          position: 'absolute',
+                          left: 8,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: 32,
+                          height: 32,
+                        }}
+                      />
+                    )}
+                    {currentImageIndex < images.length - 1 && (
+                      <Button
+                        type="text"
+                        icon={<RightOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCurrentImageIndex((prev) => prev + 1)
+                        }}
+                        style={{
+                          position: 'absolute',
+                          right: 8,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: 32,
+                          height: 32,
+                        }}
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -642,10 +646,20 @@ function FeaturedPostsCard() {
 
       {/* 导航按钮 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <Button icon={<LeftOutlined />} onClick={handlePrev} disabled={posts.length <= 1} style={{ flex: 1 }}>
+        <Button
+          icon={<LeftOutlined />}
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
+          style={{ flex: 1 }}
+        >
           上一条
         </Button>
-        <Button icon={<RightOutlined />} onClick={handleNext} disabled={posts.length <= 1} style={{ flex: 1 }}>
+        <Button
+          icon={<RightOutlined />}
+          onClick={handleNext}
+          disabled={currentIndex === posts.length - 1}
+          style={{ flex: 1 }}
+        >
           下一条
         </Button>
       </div>
