@@ -363,9 +363,9 @@ function FeaturedPostsCard() {
       }}>
         {/* 发布者信息（头像+昵称） */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f0f0f0' }}>
-          {currentPost.publisher.picture?.url ? (
+          {currentPost.publisher.picture?.id ? (
             <img
-              src={currentPost.publisher.picture.url}
+              src={`https://api.solian.app/drive/files/${currentPost.publisher.picture.id}`}
               alt={currentPost.publisher.nick}
               style={{
                 width: 40,
