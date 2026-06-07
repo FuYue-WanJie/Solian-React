@@ -238,22 +238,28 @@ function FortuneCard({ result }: { result: CheckInResult }) {
       </div>
 
       {/* 宜忌 */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', background: '#f6ffed', borderRadius: 8, borderLeft: '3px solid #52c41a', overflow: 'hidden' }}>
-          <Text style={{ fontSize: 13, fontWeight: 500, color: '#389e0d', display: 'block' }}>
-            <CheckCircleOutlined style={{ marginRight: 4 }} />宜
-          </Text>
-          <Text style={{ fontSize: 13, color: '#555', display: 'block', marginTop: 4, wordBreak: 'break-word' }}>
-            {report.luckyAction}
-          </Text>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', overflow: 'hidden' }}>
+          <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 16, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <Text style={{ fontSize: 14, fontWeight: 500, color: '#389e0d', display: 'block', wordBreak: 'break-word' }}>
+              宜
+            </Text>
+            <Text style={{ fontSize: 13, color: '#666', display: 'block', marginTop: 2, wordBreak: 'break-word' }}>
+              {report.luckyAction}
+            </Text>
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', background: '#fff2f0', borderRadius: 8, borderLeft: '3px solid #ff4d4f', overflow: 'hidden' }}>
-          <Text style={{ fontSize: 13, fontWeight: 500, color: '#cf1322', display: 'block' }}>
-            <WarningOutlined style={{ marginRight: 4 }} />忌
-          </Text>
-          <Text style={{ fontSize: 13, color: '#555', display: 'block', marginTop: 4, wordBreak: 'break-word' }}>
-            {report.avoidAction}
-          </Text>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', overflow: 'hidden' }}>
+          <WarningOutlined style={{ color: '#ff4d4f', fontSize: 16, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <Text style={{ fontSize: 14, fontWeight: 500, color: '#cf1322', display: 'block', wordBreak: 'break-word' }}>
+              忌
+            </Text>
+            <Text style={{ fontSize: 13, color: '#666', display: 'block', marginTop: 2, wordBreak: 'break-word' }}>
+              {report.avoidAction}
+            </Text>
+          </div>
         </div>
       </div>
 
