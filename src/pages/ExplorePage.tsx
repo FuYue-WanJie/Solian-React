@@ -415,11 +415,13 @@ export default function ExplorePage() {
         setImageIndices(newIndices)
       } else {
         setItems(prev => [...prev, ...result.items])
-        const newIndices: Record<string, number> = { ...imageIndices }
-        result.items.forEach(item => {
-          newIndices[item.id] = 0
+        setImageIndices(prev => {
+          const newIndices = { ...prev }
+          result.items.forEach(item => {
+            newIndices[item.id] = 0
+          })
+          return newIndices
         })
-        setImageIndices(newIndices)
       }
 
       setCursor(result.cursor)
