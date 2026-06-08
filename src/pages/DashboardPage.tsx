@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Typography, Spin, Tag, Button } from 'antd'
+import { Card, Typography, Spin, Tag, Button, Alert } from 'antd'
 import { App } from 'antd'
 import {
   RiseOutlined,
@@ -22,6 +22,7 @@ import {
   StarOutlined,
   UserOutlined,
   CloseOutlined,
+  LoginOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import {
@@ -32,6 +33,7 @@ import {
 import type { CheckInResult } from '../services/checkInService'
 import { getFeaturedPosts } from '../services/postService'
 import type { FeaturedPost } from '../services/postService'
+import { useAuthStore } from '../stores/authStore'
 
 const { Text } = Typography
 
@@ -701,9 +703,40 @@ const pillStyle: React.CSSProperties = {
   color: '#7c6fca',
 }
 
+// ============ 游客提示卡片 ============
+function GuestPromptCard() {
+  const navigate = useNavigate()
+  const { clearToken } = useAuthStore()
+
+  const handleLogin = () => {
+    clearToken()
+    navigate('/login', { replace: true })
+  }
+
+  return (
+    <Alert
+      message="您现在是游客模式"
+      description={
+        <div style={{ marginTop: 8 }}>
+          <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+            登录后可解锁更多功能！
+          </Text>
+          <Button type="primary" icon={<LoginOutlined />} onClick={handleLogin}>
+            立即登录
+          </Button>
+        </div>
+      }
+      type="info"
+      showIcon
+      closable={false}
+    />
+  )
+}
+
 // ============ 仪表盘页面 ============
 export default function DashboardPage() {
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null)
+  const { isGuest } = useAuthStore()
 
   const handleCheckedIn = useCallback((result: CheckInResult) => {
     setCheckInResult(result)
@@ -712,6 +745,7 @@ export default function DashboardPage() {
   return (
     <div style={{ padding: 24, maxWidth: 600, margin: '0 auto' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {isGuest && <GuestPromptCard />}
         <ClockCard />
         <CheckInCard onCheckedIn={handleCheckedIn} />
         {checkInResult?.fortuneReport && (

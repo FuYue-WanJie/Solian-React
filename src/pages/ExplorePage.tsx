@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Card, Typography, Spin, Button, Tabs, Empty, Space } from 'antd'
+import { useNavigate } from 'react-router-dom'
+import { Card, Typography, Spin, Button, Tabs, Empty, Space, Alert } from 'antd'
 import {
   UserOutlined,
   LikeOutlined,
@@ -11,11 +12,43 @@ import {
   LeftOutlined,
   RightOutlined,
   CloseOutlined,
+  LoginOutlined,
 } from '@ant-design/icons'
-
+import type { ReactNode } from 'react'
 import { getTimeline, type TimelineItem, type TimelineMode } from '../services/postService'
+import { useAuthStore } from '../stores/authStore'
 
 const { Text } = Typography
+
+// ============ 游客提示卡片 ============
+function GuestPromptCard() {
+  const navigate = useNavigate()
+  const { clearToken } = useAuthStore()
+
+  const handleLogin = () => {
+    clearToken()
+    navigate('/login', { replace: true })
+  }
+
+  return (
+    <Alert
+      message="您现在是游客模式"
+      description={
+        <div style={{ marginTop: 8 }}>
+          <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+            登录后可解锁更多功能！
+          </Text>
+          <Button type="primary" icon={<LoginOutlined />} onClick={handleLogin}>
+            立即登录
+          </Button>
+        </div>
+      }
+      type="info"
+      showIcon
+      closable={false}
+    />
+  )
+}
 
 // ============ 图片查看器组件 ============
 function ImageViewer({
@@ -342,7 +375,7 @@ function PostCard({
 export default function ExplorePage() {
   const [mode, setMode] = useState<TimelineMode>('latest')
   const [items, setItems] = useState<TimelineItem[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [cursor, setCursor] = useState<string | null>(null)
@@ -352,6 +385,7 @@ export default function ExplorePage() {
     postId: string
     currentIndex: number
   } | null>(null)
+  const { isGuest } = useAuthStore()
 
   const observerTarget = useRef<HTMLDivElement>(null)
 
@@ -440,6 +474,8 @@ export default function ExplorePage() {
 
   return (
     <div style={{ padding: '20px 24px', maxWidth: 600, margin: '0 auto' }}>
+      {/* 游客提示 */}
+      {isGuest && <GuestPromptCard />}
       {/* 标题 */}
       <div style={{ marginBottom: 16 }}>
         <Typography.Title level={3} style={{ margin: 0 }}>
