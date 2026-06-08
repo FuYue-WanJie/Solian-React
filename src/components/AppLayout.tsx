@@ -36,7 +36,7 @@ const MENU_ITEMS = [
 export default function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  const clearToken = useAuthStore((s) => s.clearToken)
+  const { clearToken, isGuest } = useAuthStore()
   const [collapsed, setCollapsed] = useState(false)
 
   const handleMenuClick = ({ key }: { key: string }) => {
@@ -49,6 +49,11 @@ export default function AppLayout() {
     } catch {
       // ignore
     }
+    clearToken()
+    navigate('/login', { replace: true })
+  }
+
+  const handleLogin = () => {
     clearToken()
     navigate('/login', { replace: true })
   }
@@ -117,7 +122,7 @@ export default function AppLayout() {
           style={{ border: 'none', marginTop: 4 }}
         />
 
-        {/* 底部登出 */}
+        {/* 底部菜单 */}
         <div
           style={{
             position: 'absolute',
@@ -132,12 +137,19 @@ export default function AppLayout() {
             mode="inline"
             selectable={false}
             items={[
-              {
-                key: 'logout',
-                icon: <LogoutOutlined />,
-                label: '退出',
-                onClick: handleLogout,
-              },
+              isGuest
+                ? {
+                    key: 'login',
+                    icon: <UserOutlined />,
+                    label: '登录',
+                    onClick: handleLogin,
+                  }
+                : {
+                    key: 'logout',
+                    icon: <LogoutOutlined />,
+                    label: '退出',
+                    onClick: handleLogout,
+                  },
             ]}
             style={{ border: 'none' }}
           />

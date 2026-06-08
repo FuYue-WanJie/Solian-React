@@ -11,12 +11,16 @@ interface TokenPair {
 interface AuthState {
   tokenPair: TokenPair | null
   isAuthenticated: boolean
+  isGuest: boolean
 
   /** 从 localStorage / Cookie 恢复 Token */
   restore: () => void
 
   /** 保存 Token 到 localStorage + Cookie 和 state */
   setToken: (resp: TokenResponse) => void
+
+  /** 游客登录 */
+  loginAsGuest: () => void
 
   /** 清除 Token（登出） */
   clearToken: () => void
@@ -100,17 +104,44 @@ function loadToken(): TokenPair | null {
 
 // ============ Zustand Store ============
 
+const GUEST_KEY = 'guest_mode'
+
+function isGuestMode() {
+  try {
+    return localStorage.getItem(GUEST_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function setGuestMode(value: boolean) {
+  try {
+    if (value) {
+      localStorage.setItem(GUEST_KEY, 'true')
+    } else {
+      localStorage.removeItem(GUEST_KEY)
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   tokenPair: null,
   isAuthenticated: false,
+  isGuest: false,
 
   restore() {
     const pair = loadToken()
+    const guest = isGuestMode()
     if (pair && pair.expiresAt > Date.now()) {
-      set({ tokenPair: pair, isAuthenticated: true })
+      set({ tokenPair: pair, isAuthenticated: true, isGuest: false })
+    } else if (guest) {
+      set({ tokenPair: null, isAuthenticated: false, isGuest: true })
     } else {
       saveToken(null)
-      set({ tokenPair: null, isAuthenticated: false })
+      setGuestMode(false)
+      set({ tokenPair: null, isAuthenticated: false, isGuest: false })
     }
   },
 
@@ -123,12 +154,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       refreshExpiresAt: now + resp.refreshExpiresIn * 1000,
     }
     saveToken(pair)
-    set({ tokenPair: pair, isAuthenticated: true })
+    setGuestMode(false)
+    set({ tokenPair: pair, isAuthenticated: true, isGuest: false })
+  },
+
+  loginAsGuest() {
+    setGuestMode(true)
+    saveToken(null)
+    set({ tokenPair: null, isAuthenticated: false, isGuest: true })
   },
 
   clearToken() {
     saveToken(null)
-    set({ tokenPair: null, isAuthenticated: false })
+    setGuestMode(false)
+    set({ tokenPair: null, isAuthenticated: false, isGuest: false })
   },
 
   getAccessToken() {

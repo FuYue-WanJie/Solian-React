@@ -12,12 +12,14 @@ import { useAuthStore } from './stores/authStore'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  const isGuest = useAuthStore((s) => s.isGuest)
+  return (isAuthenticated || isGuest) ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>
+  const isGuest = useAuthStore((s) => s.isGuest)
+  return (isAuthenticated || isGuest) ? <Navigate to="/" replace /> : <>{children}</>
 }
 
 function AppRoutes() {

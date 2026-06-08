@@ -38,12 +38,18 @@ type LoginStep = 'input' | 'factor' | 'verify' | 'success'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { setToken, isAuthenticated } = useAuthStore()
+  const { setToken, isAuthenticated, isGuest, loginAsGuest } = useAuthStore()
 
-  // 如果已登录，跳转首页
+  // 如果已登录或是游客，跳转首页
   useEffect(() => {
-    if (isAuthenticated) navigate('/', { replace: true })
-  }, [isAuthenticated, navigate])
+    if (isAuthenticated || isGuest) navigate('/', { replace: true })
+  }, [isAuthenticated, isGuest, navigate])
+
+  // 游客登录
+  const handleGuestLogin = () => {
+    loginAsGuest()
+    navigate('/', { replace: true })
+  }
 
   // 步骤状态
   const [step, setStep] = useState<LoginStep>('input')
@@ -263,7 +269,7 @@ export default function LoginPage() {
               type="link"
               size="large"
               block
-              onClick={() => navigate('/', { replace: true })}
+              onClick={handleGuestLogin}
               style={{ marginTop: 8, color: '#999' }}
             >
               暂不登录，以游客身份浏览
