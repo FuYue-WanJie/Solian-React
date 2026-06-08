@@ -84,16 +84,28 @@ export default function AppLayout() {
             margin: '0 8px',
           }}
         >
-          <Text
-            strong
+          <img
+            src="/favicon.png"
+            alt="Solian"
             style={{
-              fontSize: collapsed ? 18 : 15,
-              color: '#1677ff',
-              whiteSpace: 'nowrap',
+              height: collapsed ? 32 : 36,
+              width: collapsed ? 32 : 36,
+              objectFit: 'contain',
             }}
-          >
-            {collapsed ? 'S' : 'Solian'}
-          </Text>
+          />
+          {!collapsed && (
+            <Text
+              strong
+              style={{
+                fontSize: 15,
+                color: '#1677ff',
+                whiteSpace: 'nowrap',
+                marginLeft: 8,
+              }}
+            >
+              Solian
+            </Text>
+          )}
         </div>
 
         {/* 导航菜单 */}
