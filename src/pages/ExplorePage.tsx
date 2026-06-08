@@ -14,7 +14,6 @@ import {
   CloseOutlined,
   LoginOutlined,
 } from '@ant-design/icons'
-import type { ReactNode } from 'react'
 import { getTimeline, type TimelineItem, type TimelineMode } from '../services/postService'
 import { useAuthStore } from '../stores/authStore'
 
@@ -431,7 +430,7 @@ export default function ExplorePage() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [mode, cursor, imageIndices])
+  }, [mode, cursor])
 
   // 页面加载时和模式切换时加载
   useEffect(() => {
@@ -439,7 +438,7 @@ export default function ExplorePage() {
     setCursor(null)
     setHasMore(true)
     loadTimeline(true)
-  }, [mode])
+  }, [mode, loadTimeline])
 
   // 无限滚动加载
   useEffect(() => {
@@ -471,6 +470,36 @@ export default function ExplorePage() {
     { key: 'top', label: '热门', icon: <FireOutlined /> },
     { key: 'personalized', label: '推荐', icon: <CompassOutlined /> },
   ]
+
+  // 渲染图片查看器
+  const renderImageViewer = () => {
+    if (!viewerState?.visible) return null
+    
+    const item = items.find(i => i.id === viewerState.postId)
+    if (!item) return null
+    
+    const images = getPostImages(item)
+    
+    return (
+      <ImageViewer
+        images={images}
+        currentIndex={viewerState.currentIndex}
+        onClose={() => setViewerState(null)}
+        onPrev={() => {
+          setViewerState(prev => prev ? {
+            ...prev,
+            currentIndex: (prev.currentIndex - 1 + images.length) % images.length,
+          } : null)
+        }}
+        onNext={() => {
+          setViewerState(prev => prev ? {
+            ...prev,
+            currentIndex: (prev.currentIndex + 1) % images.length,
+          } : null)
+        }}
+      />
+    )
+  }
 
   return (
     <div style={{ padding: '20px 24px', maxWidth: 600, margin: '0 auto' }}>
@@ -544,30 +573,7 @@ export default function ExplorePage() {
       )}
 
       {/* 图片查看器 */}
-      {viewerState?.visible && (() => {
-        const item = items.find(i => i.id === viewerState.postId)
-        if (!item) return null
-        const images = getPostImages(item)
-        return (
-          <ImageViewer
-            images={images}
-            currentIndex={viewerState.currentIndex}
-            onClose={() => setViewerState(null)}
-            onPrev={() => {
-              setViewerState(prev => prev ? {
-                ...prev,
-                currentIndex: (prev.currentIndex - 1 + images.length) % images.length,
-              } : null)
-            }}
-            onNext={() => {
-              setViewerState(prev => prev ? {
-                ...prev,
-                currentIndex: (prev.currentIndex + 1) % images.length,
-              } : null)
-            }}
-          />
-        )
-      })()}
+      {renderImageViewer()}
     </div>
   )
 }
