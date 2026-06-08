@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import CheckInDetailPage from './pages/CheckInDetailPage'
 import PlaceholderPage from './pages/PlaceholderPage'
+import ExplorePage from './pages/ExplorePage'
 import AppLayout from './components/AppLayout'
 import { useAuthStore } from './stores/authStore'
 
@@ -45,7 +46,7 @@ function AppRoutes() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/checkin/detail" element={<CheckInDetailPage />} />
-        <Route path="/explore" element={<PlaceholderPage />} />
+        <Route path="/explore" element={<ExplorePage />} />
         <Route path="/chat" element={<PlaceholderPage />} />
         <Route path="/realm" element={<PlaceholderPage />} />
         <Route path="/account" element={<PlaceholderPage />} />

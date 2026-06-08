@@ -1,4 +1,3 @@
-
 import api from './api'
 
 // Type definitions for Featured Post
@@ -84,7 +83,45 @@ export interface FeaturedPost {
   }
 }
 
+// Type definitions for Timeline
+export interface TimelineItem {
+  id: string
+  type: string
+  resourceIdentifier: string
+  meta: Record<string, unknown>
+  data: FeaturedPost
+}
+
+export interface TimelinePage {
+  cursor: string | null
+  hasMore: boolean
+  items: TimelineItem[]
+}
+
+export type TimelineMode = 'personalized' | 'top' | 'latest'
+export type TimelineFilter = 'subscriptions' | 'friends' | null
+
 export async function getFeaturedPosts(): Promise<FeaturedPost[]> {
   const response = await api.get<FeaturedPost[]>('/sphere/posts/featured')
+  return response.data
+}
+
+export async function getTimeline(params: {
+  take?: number
+  cursor?: string | null
+  mode?: TimelineMode
+  filter?: TimelineFilter
+  aggressive?: boolean
+}): Promise<TimelinePage> {
+  const searchParams: Record<string, string | number | boolean> = {}
+  if (params.take) searchParams.take = params.take
+  if (params.cursor) searchParams.cursor = params.cursor
+  if (params.mode) searchParams.mode = params.mode
+  if (params.filter) searchParams.filter = params.filter
+  if (params.aggressive !== undefined) searchParams.aggressive = params.aggressive
+
+  const response = await api.get<TimelinePage>('/sphere/timeline', {
+    params: searchParams,
+  })
   return response.data
 }
