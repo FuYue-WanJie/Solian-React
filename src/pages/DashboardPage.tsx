@@ -715,7 +715,7 @@ function GuestPromptCard() {
 
   return (
     <Alert
-      message="您现在是游客模式"
+      title="您现在是游客模式"
       description={
         <div style={{ marginTop: 8 }}>
           <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
