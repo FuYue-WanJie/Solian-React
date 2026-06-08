@@ -433,9 +433,9 @@ export default function ExplorePage() {
 
   // Tab 项
   const tabItems = [
-    { key: 'latest', label: <><ClockCircleOutlined /> 最新</>, icon: <ClockCircleOutlined /> },
-    { key: 'top', label: <><FireOutlined /> 热门</>, icon: <FireOutlined /> },
-    { key: 'personalized', label: <><CompassOutlined /> 推荐</>, icon: <CompassOutlined /> },
+    { key: 'latest', label: '最新', icon: <ClockCircleOutlined /> },
+    { key: 'top', label: '热门', icon: <FireOutlined /> },
+    { key: 'personalized', label: '推荐', icon: <CompassOutlined /> },
   ]
 
   return (
