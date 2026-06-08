@@ -391,7 +391,7 @@ export default function ExplorePage() {
 
   // 加载时间线
   const loadTimeline = useCallback(async (reset: boolean = false) => {
-    if (loading || loadingMore) return
+    if (!reset && loadingMore) return
 
     if (reset) {
       setLoading(true)
@@ -431,9 +431,9 @@ export default function ExplorePage() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [mode, cursor, loading, loadingMore, imageIndices])
+  }, [mode, cursor, imageIndices])
 
-  // 模式切换时重置
+  // 页面加载时和模式切换时加载
   useEffect(() => {
     setItems([])
     setCursor(null)
